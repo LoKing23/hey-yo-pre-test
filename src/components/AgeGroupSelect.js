@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Select, Flex, Text, FormControl, FormLabel, FormErrorMessage, FormHelperText, } from '@chakra-ui/react'
 import { useFormContext } from 'react-hook-form';
 
@@ -14,49 +14,50 @@ import { useFormContext } from 'react-hook-form';
     7 ~ 20 歲
 */
 const AGE_RANGE = Array.from({ length: 20 }).map((_, index) => index + 1);
+
 const AgeGroupSelect = ({
     label = '年齡', 
-    startName = 'startAge', 
-    endName = 'endAge',
-    validRange = [0, 20],
+    name = 'ageGroup', 
 }) => {
     const { register, watch, formState: { errors }, trigger } = useFormContext();
+    const startName = `${name}[0]`;
+    const endName = `${name}[1]`;
     const isInvalid = errors[startName] || errors[endName];
-    const validateField = () => trigger([startName, endName]);
-    const [startAge, endAge] = [watch(startName), watch(endName)];
-    const startAgeProps = register(startName, {
-        validate: {
-            validRange: value => {
-                const isValid = +value < +endAge;
-                
-                return isValid || `年齡區間不可重疊`;
-            },
-        },
-    });
-    const endAgeProps = register(endName, {
-        validate: {
-            validRange: value => {
-                const isValid = +value > +startAge;
-                
-                return isValid || `年齡區間不可重疊`;
-            }
-        },
-    });
+    const [startAge, endAge] = watch([startName, endName]);
+
+    // trigger validation when startAge or endAge is selected
+    useEffect(() => {
+        const isSelected = startAge && endAge;
+
+        if(isSelected) {
+            trigger(startName);
+            trigger(endName);
+        }
+
+    }, [startAge, endAge, trigger, startName, endName]);
 
     return (
         <FormControl isInvalid={isInvalid}>
             <FormLabel>{label}</FormLabel>
             <Flex alignItems='center'>
                 <Select 
-                    {...startAgeProps} 
-                    onChange={event => {
-                        startAgeProps.onChange(event);
-                        validateField();
-                    }}
+                    {...register(
+                        startName,
+                        {
+                            validate: {
+                                validRange: value => {
+                                    const endAge = watch(`${name}[1]`);
+                                    const isValid = +value <= +endAge;
+                                    
+                                    return isValid || `年齡區間錯誤`;
+                                }
+                            },
+                        }
+                    )}
                 >
                     {
                         AGE_RANGE.map(value => (
-                            <option key={value} value={value} disabled={value > endAge}>
+                            <option key={value} value={value} disabled={endAge && value > endAge}>
                                 { value }
                             </option>
                         ))
@@ -66,15 +67,24 @@ const AgeGroupSelect = ({
                     ~
                 </Text>
                 <Select 
-                    {...endAgeProps}
-                    onChange={event => {
-                        endAgeProps.onChange(event);
-                        validateField();
-                    }}
+                    {...register(
+                        endName,
+                        {
+                            validate: {
+                                validRange: value => {
+                                    const startAge = watch(`${name}[0]`);
+                                    const isValid = +value >= +startAge;
+
+                                    return isValid || `年齡區間錯誤`;
+                                },
+                            },
+
+                        }
+                    )}
                 >
                     {
                         AGE_RANGE.map(value => (
-                            <option key={value} value={value} disabled={value < endAge} >
+                            <option key={value} value={value} disabled={startAge && value < startAge} >
                                 { value }
                             </option>
                         ))

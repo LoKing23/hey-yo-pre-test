@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, FormLabel, FormErrorMessage, InputGroup, InputLeftAddon, Input } from '@chakra-ui/react'
+import { FormControl, FormLabel, FormErrorMessage, InputGroup, InputLeftAddon, Input, NumberInputField, NumberInput } from '@chakra-ui/react'
 import { useFormContext } from 'react-hook-form';
 import addComma from "../utils/addComma"
 /*
@@ -9,24 +9,36 @@ import addComma from "../utils/addComma"
 ○ 需要支援小數點的輸入與顯示
 */
 
-const PriceInput = ({label = '入住費用(每人每晚)'}) => {
-  const { register, formState: { errors }, watch } = useFormContext();
-  const priceProps = register('price', { required: '不可以為空白' });
+const PriceInput = ({label = '入住費用(每人每晚)', name = 'price'}) => {
+  const { register, formState: { errors }, getValues } = useFormContext();
+  const priceProps = register(name, { 
+    required: '不可以為空白',
+  });
   
   return (
-      <FormControl isInvalid={errors.price}>
+      <FormControl isInvalid={errors[name]}>
           <FormLabel>{label}</FormLabel>
           <InputGroup>
             <InputLeftAddon children='TWD' />
             <Input 
               {...priceProps}
-              // onChange={(event) => {
-              //   const { value } = event.target;
-              //   const number = Number(value.replace(/,/g, ''));
-              //   const formatNumber = addComma(number);
+              onChange={e => {
+                const { value } = e.target;
+                const formattedValue = value.replace(/,/g, '');
+                const num = Number(formattedValue);
+                const isInvalid = isNaN(num);
+                const isEmpty = value === '';
 
-              //   priceProps.onChange(formatNumber);
-              // }}
+                if(isInvalid) {
+                  e.target.value = getValues(name);
+                } else if(isEmpty) {
+                  e.target.value = '';
+                } else {
+                  e.target.value = addComma(formattedValue);
+                }
+
+                priceProps.onChange(e);
+              }}
             />
           </InputGroup>
           <FormErrorMessage>{errors.price?.message}</FormErrorMessage>
