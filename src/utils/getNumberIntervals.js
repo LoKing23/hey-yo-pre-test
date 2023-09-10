@@ -18,7 +18,7 @@ const getOverlap = (array) => {
     return overlapRangeArray
 }   
 
-const getNotInclude = (array, min, max) => {
+const getNotInclude = (array, min = 1, max = 20) => {
     const result = [];
     const ascendingArray = structuredClone(array).sort((a, b) => a[0] - b[0]);
     let prevMax = min;
@@ -51,7 +51,6 @@ const getNumberIntervals = (array, min = 0, max = 20) => {
     const result = { overlap, notInclude };
 
     return result
-
 }
 
 export default getNumberIntervals

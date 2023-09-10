@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
-import { Select, Flex, Text, FormControl, FormLabel, FormErrorMessage, FormHelperText, } from '@chakra-ui/react'
+import { Select, Flex, Text, FormControl, FormLabel } from '@chakra-ui/react'
 import { useFormContext } from 'react-hook-form';
+import findNestedErrorMessage from "../utils/findNestedErrorMessage"
+import FormErrorMessage from "./FormErrorMessage"
 
 /*
 ○ UI 如下圖所示,間距色碼字型大小自訂
@@ -20,10 +22,10 @@ const AgeGroupSelect = ({
     name = 'ageGroup', 
 }) => {
     const { register, watch, formState: { errors }, trigger } = useFormContext();
-    const startName = `${name}[0]`;
-    const endName = `${name}[1]`;
-    const isInvalid = errors[startName] || errors[endName];
+    const startName = `${name}.0`;
+    const endName = `${name}.1`;
     const [startAge, endAge] = watch([startName, endName]);
+    const { isInvalid, errorMessage  } = findNestedErrorMessage(errors, startName) || findNestedErrorMessage(errors, endName);
 
     // trigger validation when startAge or endAge is selected
     useEffect(() => {
@@ -44,14 +46,7 @@ const AgeGroupSelect = ({
                     {...register(
                         startName,
                         {
-                            validate: {
-                                validRange: value => {
-                                    const endAge = watch(`${name}[1]`);
-                                    const isValid = +value <= +endAge;
-                                    
-                                    return isValid || `年齡區間錯誤`;
-                                }
-                            },
+                           required: '請選擇起始年齡',
                         }
                     )}
                 >
@@ -70,15 +65,7 @@ const AgeGroupSelect = ({
                     {...register(
                         endName,
                         {
-                            validate: {
-                                validRange: value => {
-                                    const startAge = watch(`${name}[0]`);
-                                    const isValid = +value >= +startAge;
-
-                                    return isValid || `年齡區間錯誤`;
-                                },
-                            },
-
+                            required: '請選擇結束年齡',
                         }
                     )}
                 >
@@ -91,19 +78,7 @@ const AgeGroupSelect = ({
                     }
                 </Select>
             </Flex>
-            {
-                isInvalid && (
-                    <FormErrorMessage 
-                        bgColor='red.100'
-                        p="2"
-                        rounded={3}
-                    >
-                        <Text>
-                            { errors[startName]?.message || errors[endName]?.message }
-                        </Text>
-                    </FormErrorMessage>
-                )
-            }
+            <FormErrorMessage errorMessage={errorMessage} />
         </FormControl>
     )
 }

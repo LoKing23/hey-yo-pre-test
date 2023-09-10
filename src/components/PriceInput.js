@@ -1,7 +1,9 @@
 import React from 'react';
-import { FormControl, FormLabel, FormErrorMessage, InputGroup, InputLeftAddon, Input, NumberInputField, NumberInput } from '@chakra-ui/react'
+import { FormControl, FormLabel, InputGroup, InputLeftAddon, Input } from '@chakra-ui/react'
 import { useFormContext } from 'react-hook-form';
 import addComma from "../utils/addComma"
+import findNestedErrorMessage from "../utils/findNestedErrorMessage"
+import FormErrorMessage from "./FormErrorMessage"
 /*
 ○ UI 如下圖所示,間距色碼字型大小自訂
 ○ 初始價格為 0 元
@@ -14,9 +16,10 @@ const PriceInput = ({label = '入住費用(每人每晚)', name = 'price'}) => {
   const priceProps = register(name, { 
     required: '不可以為空白',
   });
+  const { isInvalid, errorMessage } = findNestedErrorMessage(errors, name);
   
   return (
-      <FormControl isInvalid={errors[name]}>
+      <FormControl isInvalid={isInvalid}>
           <FormLabel>{label}</FormLabel>
           <InputGroup>
             <InputLeftAddon children='TWD' />
@@ -26,7 +29,7 @@ const PriceInput = ({label = '入住費用(每人每晚)', name = 'price'}) => {
                 const { value } = e.target;
                 const formattedValue = value.replace(/,/g, '');
                 const num = Number(formattedValue);
-                const isInvalid = isNaN(num);
+                const isInvalid = isNaN(num) && formattedValue !== '-';
                 const isEmpty = value === '';
 
                 if(isInvalid) {
@@ -41,7 +44,7 @@ const PriceInput = ({label = '入住費用(每人每晚)', name = 'price'}) => {
               }}
             />
           </InputGroup>
-          <FormErrorMessage>{errors.price?.message}</FormErrorMessage>
+          <FormErrorMessage errorMessage={errorMessage} />
       </FormControl>
   )
 }

@@ -43,7 +43,7 @@ const SettingForm = ({
 
     return (
         <FormProvider {...methods}>
-            <Box p="4">
+            <Box p="4" border="4px" borderStyle="dashed" borderColor="gray.300">
                 <form onSubmit={handleSubmit(onSubmit)}>
                     {
                         fields.map((field, index) => (
