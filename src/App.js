@@ -27,7 +27,17 @@ import SettingForm from "./components/SettingForm"
 const App = () => {
   const [result, setResult] = useState([]);
   const handleSubmit = (value) => {
-    setResult(value.group);
+    // 將結果中的字串轉換為數字
+    const numericGroup = value.group.map(item => {
+      const ageGroup = item.ageGroup.map(str => parseInt(str, 10));
+
+      return {
+        ageGroup,
+        price: Number(item.price) // 將價格轉換為數字
+      };
+    });
+
+    setResult(numericGroup);
   }
 
   return (
