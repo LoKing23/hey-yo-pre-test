@@ -1,13 +1,19 @@
 import React from 'react'
 import { Flex, Box, Text, Spacer, Button, Center } from '@chakra-ui/react';
 import { useForm, FormProvider, useFieldArray } from 'react-hook-form';
+// utils
+import getNumberIntervals from "../utils/getNumberIntervals"
 // components
 import AgeGroupSelect from "./AgeGroupSelect";
 import PriceInput from "./PriceInput";
 
 const INITIAL_GROUP_VALUE = {
     ageGroup: [null, null],
-    price: 0
+    price: null
+}
+const INTERVAL = {
+    MIN: 1,
+    MAX: 20
 }
 
 const FormHeader = ({ handleRemoveForm, formName }) => {
@@ -35,11 +41,14 @@ const SettingForm = ({
     const methods = useForm({
         defaultValues: { group: [INITIAL_GROUP_VALUE] }
     })        
-    const { control, handleSubmit } = methods;
+    const { control, handleSubmit, watch } = methods;
     const { fields, append, remove } = useFieldArray({
         control,
         name: "group"
     }) 
+    const ageGroupValue = watch('group').map(({ ageGroup: [start, end] }) => [+start, +end]);
+    const { overlap, notInclude } = getNumberIntervals(ageGroupValue, INTERVAL.MIN, INTERVAL.MAX);
+    const incompleteIntervals = notInclude.length !== 0;
 
     return (
         <FormProvider {...methods}>
@@ -51,7 +60,7 @@ const SettingForm = ({
                                 <FormHeader formName={`價格設定 - ${index + 1}`} handleRemoveForm={() => remove(index)}/>
                                 <Flex>
                                     <Box w='full' mr="2">
-                                        <AgeGroupSelect name={`group.${index}.ageGroup`} />
+                                        <AgeGroupSelect name={`group.${index}.ageGroup`} overlapIntervals={overlap} />
                                     </Box>
                                     <Spacer />
                                     <Box w='full'>
@@ -61,17 +70,21 @@ const SettingForm = ({
                             </Box>
                         ))
                     }
-                    <Button 
-                        w="fit-content"
-                        variant='unstyled' 
-                        color='green.500'
-                        _hover={{
-                            color: 'green.300',
-                        }}
-                        onClick={() => append(INITIAL_GROUP_VALUE)}
-                    >
-                        + 新增年齡區間
-                    </Button>
+                    {
+                        incompleteIntervals && (
+                            <Button 
+                                w="fit-content"
+                                variant='unstyled' 
+                                color='green.500'
+                                _hover={{
+                                    color: 'green.300',
+                                }}
+                                onClick={() => append(INITIAL_GROUP_VALUE)}
+                            >
+                                + 新增年齡區間
+                            </Button>
+                        )
+                    }
                     <Center>
                         <Button
                             mt="4"

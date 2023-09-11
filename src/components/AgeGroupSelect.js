@@ -20,13 +20,28 @@ const AGE_RANGE = Array.from({ length: 20 }).map((_, index) => index + 1);
 const AgeGroupSelect = ({
     label = '年齡', 
     name = 'ageGroup', 
+    overlapIntervals = [],
 }) => {
     const { register, watch, formState: { errors }, trigger } = useFormContext();
-    const startName = `${name}.0`;
-    const endName = `${name}.1`;
+    const [startName, endName] = [`${name}.0`, `${name}.1`];
     const [startAge, endAge] = watch([startName, endName]);
     const { isInvalid, errorMessage  } = findNestedErrorMessage(errors, startName) || findNestedErrorMessage(errors, endName);
 
+    const validate = (value) => {
+        if (!value) {
+            return '請選擇年齡';
+        }
+
+        const isOverlap = overlapIntervals.some(([min, max]) => (
+            (+startAge >= +min && +startAge <= +max) ||
+            (+endAge >= +min && +endAge <= +max) ||
+            (+min >= +startAge && +min <= +endAge) ||
+            (+max >= +startAge && +max <= +endAge)
+
+        ));
+
+        return isOverlap ? '年齡區間不可重疊' : true;
+    };
     // trigger validation when startAge or endAge is selected
     useEffect(() => {
         const isSelected = startAge && endAge;
@@ -45,9 +60,7 @@ const AgeGroupSelect = ({
                 <Select 
                     {...register(
                         startName,
-                        {
-                           required: '請選擇起始年齡',
-                        }
+                        { validate }
                     )}
                 >
                     {
@@ -64,9 +77,7 @@ const AgeGroupSelect = ({
                 <Select 
                     {...register(
                         endName,
-                        {
-                            required: '請選擇結束年齡',
-                        }
+                        { validate }
                     )}
                 >
                     {

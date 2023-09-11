@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, FormLabel, InputGroup, InputLeftAddon, Input } from '@chakra-ui/react'
+import { FormControl, FormLabel, InputGroup, InputLeftAddon, Input, FormHelperText } from '@chakra-ui/react'
 import { useFormContext } from 'react-hook-form';
 import addComma from "../utils/addComma"
 import findNestedErrorMessage from "../utils/findNestedErrorMessage"
@@ -29,7 +29,7 @@ const PriceInput = ({label = '入住費用(每人每晚)', name = 'price'}) => {
                 const { value } = e.target;
                 const formattedValue = value.replace(/,/g, '');
                 const num = Number(formattedValue);
-                const isInvalid = isNaN(num) && formattedValue !== '-';
+                const isInvalid = formattedValue !== '-' && isNaN(num);
                 const isEmpty = value === '';
 
                 if(isInvalid) {
@@ -45,6 +45,7 @@ const PriceInput = ({label = '入住費用(每人每晚)', name = 'price'}) => {
             />
           </InputGroup>
           <FormErrorMessage errorMessage={errorMessage} />
+          <FormHelperText textAlign='right'>輸入0表示免費</FormHelperText>
       </FormControl>
   )
 }

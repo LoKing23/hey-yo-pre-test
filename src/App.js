@@ -21,19 +21,17 @@ import SettingForm from "./components/SettingForm"
   ■ 當所有年齡範圍已經包含 0 到 20 歲時,新增價格設定需要 disabled
   ■ 入住費用是否有正確顯示千分位 (包含小數點的輸入與顯示)
 */
-
-// const generateId = () => uuidv4();
-
 const App = () => {
   const [result, setResult] = useState([]);
   const handleSubmit = (value) => {
     // 將結果中的字串轉換為數字
     const numericGroup = value.group.map(item => {
       const ageGroup = item.ageGroup.map(str => parseInt(str, 10));
+      const price = parseFloat(item.price.replace(/,/g, ''));
 
       return {
         ageGroup,
-        price: Number(item.price) // 將價格轉換為數字
+        price // 將價格轉換為數字
       };
     });
 
